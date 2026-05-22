@@ -23,6 +23,7 @@ $type=$bill['teacher_type']??'visiting';
 $rate=(float)$bill['rate_per_lecture'];
 $totalLec=(int)$bill['total_lectures'];
 $totalAmt=(float)$bill['total_amount'];
+$totalAmountWords = amountInWords($totalAmt);
 $month=$bill['month_year'];
 $theoryHrs=$totalLec;
 $isVisiting=in_array($type,['visiting','guest']);
@@ -30,6 +31,22 @@ $isAdjunct=($type==='earn_and_learn');
 $isPoP=false;
 function h($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
 function n($v){return number_format((float)$v,2);}
+function amountInWords($amount) {
+    $formatter = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+
+    $amount = round($amount, 2);
+
+    $rupees = floor($amount);
+    $paise = round(($amount - $rupees) * 100);
+
+    $words = ucfirst($formatter->format($rupees)) . " Rupees";
+
+    if ($paise > 0) {
+        $words .= " and " . $formatter->format($paise) . " Paise";
+    }
+
+    return $words . " Only";
+}
 function cross(){
     return '<div style="position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden">'.
            '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none" style="position:absolute;top:0;left:0;width:100%;height:100%">'.
@@ -49,7 +66,7 @@ body{font-family:'Times New Roman',Times,serif;color:#000;background:#ccc}
 .pbar{position:fixed;top:0;left:0;right:0;z-index:999;background:#1a3a6e;color:#fff;display:flex;align-items:center;gap:12px;padding:9px 18px;font-family:Arial,sans-serif;font-size:12px}
 .pbar button{background:#fff;color:#1a3a6e;border:none;border-radius:4px;padding:6px 16px;font-weight:700;font-size:12px;cursor:pointer}
 .pbar a{color:rgba(255,255,255,.7);text-decoration:none;margin-left:auto}
-.page{width:210mm;min-height:297mm;padding:13mm 14mm 12mm;margin:0 auto 14px;background:#fff;page-break-after:always;position:relative}
+.page{width:210mm;min-height:297mm;padding:13mm 14mm 0mm 12mm;margin:0 auto 14px;background:#fff;page-break-after:always;position:relative}
 @media screen{body{padding-top:50px}.page{box-shadow:0 2px 10px rgba(0,0,0,.3)}}
 @media print{.pbar{display:none!important}body{background:#fff;padding-top:0}.page{box-shadow:none;margin:0}}
 .c{text-align:center}.b{font-weight:bold}.u{text-decoration:underline}.j{text-align:justify}
@@ -73,7 +90,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 .cpara{font-size:9.5pt;text-align:justify;line-height:1.7;margin-bottom:4mm}
 .bbox{border:1.5px solid #000;padding:3mm 4mm;margin:4mm 0;font-size:9.5pt;line-height:2}
 .bbox h3{font-size:10pt;font-weight:bold;text-align:center;margin-bottom:2mm}
-.brow{display:flex;gap:16mm}
+.brow{display:flex;}
 .sgg{display:grid;grid-template-columns:1fr 1fr;gap:8mm;font-size:9.5pt;line-height:1.9;margin-top:8mm}
 .sr{text-align:right}
 .prin{text-align:center;margin-top:16mm;font-size:9.5pt;line-height:1.9}
@@ -97,9 +114,9 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <hr class="thin">
 <p class="c b" style="font-size:11pt;margin:3mm 0">BILL FOR THE MONTH OF &nbsp;<span class="fl">&nbsp;<?= h($month) ?>&nbsp;</span></p>
 <div class="binfo">
-  <div><span class="b">Name of the Faculty:</span> <span class="fl" style="min-width:90mm">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></div>
-  <div><span class="b">Department:</span> <span class="fl" style="min-width:70mm">&nbsp;<?= h($bill['department']??'Computer Science') ?>&nbsp;</span></div>
-  <div><span class="b">Appointment order number:</span> <span class="fl" style="min-width:65mm">&nbsp;</span> &nbsp;<span class="b">dated</span> <span class="fl" style="min-width:22mm">&nbsp;</span></div>
+  <div><span class="b">Name of the Faculty:</span> <span class="fl" style="min-width: 136mm;margin-left: 61px;">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></div>
+  <div><span class="b">Appointment order number:</span> <span class="fl" style="min-width:136mm;margin-left: 19px;">&nbsp;</div>
+  <div><span class="b">Department:</span> <span class="fl" style="min-width: 87mm;margin-left: 105px;">&nbsp;<?= h($bill['department']??'Computer Science') ?>&nbsp;</span></span> &nbsp;<span class="b">Date:</span> <span class="fl" style="min-width:39mm">&nbsp;</span></div>
 </div>
 <p class="b" style="font-size:9pt;margin-bottom:2mm">Note: Fill in the details applicable</p>
 
@@ -107,12 +124,12 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <?php if(!$isPoP) echo cross(); ?>
 <table>
   <tr><td colspan="2" class="sh">For Full-time Professor of Practice/ Adjunct Faculty</td></tr>
-  <tr><td class="lc">Fixed Emoluments per month (as per office order)</td><td class="ac">Rs.&nbsp;<?= $isPoP?n($totalAmt):'' ?></td></tr>
+  <tr><td class="lc">Fixed Emoluments per month (as per office order)</td><td>₹&nbsp;<?= $isPoP?n($totalAmt):'' ?></td></tr>
   <tr><td>a) Total no. of working days in the month (including holidays) in the month</td><td class="ac"></td></tr>
   <tr><td>b) No. of permissible casual leaves availed in the month</td><td class="ac"></td></tr>
   <tr><td>c) No. of additional leaves availed in the month</td><td class="ac"></td></tr>
   <tr><td>d) Total number of days permitted to claim the bill (a - c)</td><td class="ac"></td></tr>
-  <tr><td class="tb">Bill claimed for <span class="fl" style="min-width:18mm">&nbsp;</span> days in the month @ Rs. <span class="fl" style="min-width:16mm">&nbsp;</span> per day</td><td class="ac tb">Rs.</td></tr>
+  <tr><td class="tb">Bill claimed for <span class="fl" style="min-width:18mm">&nbsp;</span> days in the month @ ₹ <span class="fl" style="min-width:16mm">&nbsp;</span> per day</td><td class="tb">₹</td></tr>
 </table>
 </div>
 
@@ -121,19 +138,19 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <table>
   <tr><td colspan="2" class="sh">For Hourly based Visiting faculty /Sessional Instructor /Expert Faculty</td></tr>
   <tr><td class="lc">Permissible rate /hour (as per office order) for-</td><td class="ac"></td></tr>
-  <tr><td style="padding-left:8mm">1.&nbsp; Theory/ Tutorials</td><td class="ac">Rs.&nbsp;<?= $isVisiting?n($rate):'' ?></td></tr>
-  <tr><td style="padding-left:8mm">2.&nbsp; Practical/ Project</td><td class="ac">Rs.</td></tr>
-  <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">Rs.</td></tr>
-  <tr><td>Name of Program and course</td><td class="ac">1.<br>2.</td></tr>
+  <tr><td style="padding-left:8mm">1.&nbsp; Theory/ Tutorials</td><td class="ac">₹&nbsp;<?= $isVisiting?n($rate):'' ?></td></tr>
+  <tr><td style="padding-left:8mm">2.&nbsp; Practical/ Project</td><td class="ac">₹</td></tr>
+  <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">₹</td></tr>
+  <tr><td>Name of Program and course</td><td class="ac"></td></tr>
   <tr><td>Total no. of hours in the month (details as per Annexure I attached)</td><td class="ac"></td></tr>
-  <tr><td style="padding-left:8mm">1.&nbsp; Theory and Tutorials</td><td class="ac">1.&nbsp;<?= $isVisiting?$theoryHrs.' hrs':'' ?></td></tr>
-  <tr><td style="padding-left:8mm">2.&nbsp; Practical / Project</td><td class="ac">2.&nbsp;<?= $isVisiting?'0 hrs':'' ?></td></tr>
-  <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">3.&nbsp;<?= $isVisiting?'0 hrs':'' ?></td></tr>
+  <tr><td style="padding-left:8mm">1.&nbsp; Theory and Tutorials</td><td class="ac">&nbsp;<?= $isVisiting?$theoryHrs.' hrs':'' ?></td></tr>
+  <tr><td style="padding-left:8mm">2.&nbsp; Practical / Project</td><td class="ac">&nbsp;<?= $isVisiting?'0 hrs':'' ?></td></tr>
+  <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">&nbsp;<?= $isVisiting?'0 hrs':'' ?></td></tr>
   <tr><td>Bill claimed for-</td><td class="ac"></td></tr>
-  <tr><td style="padding-left:8mm">a.&nbsp; Theory and Tutorials (for <span class="fl" style="min-width:10mm">&nbsp;<?= $isVisiting?$theoryHrs:'' ?>&nbsp;</span> hrs @ Rs. <span class="fl" style="min-width:12mm">&nbsp;<?= $isVisiting?n($rate):'' ?>&nbsp;</span> per hour)</td><td class="ac">Rs.&nbsp;<?= $isVisiting?n($theoryHrs*$rate):'' ?></td></tr>
-  <tr><td style="padding-left:8mm">b.&nbsp; Practical / Project (for <span class="fl" style="min-width:10mm">&nbsp;0&nbsp;</span> hrs @ Rs. <span class="fl" style="min-width:12mm">&nbsp;</span> per hour)</td><td class="ac">Rs.&nbsp;<?= $isVisiting?'0.00':'' ?></td></tr>
-  <tr><td style="padding-left:8mm">c.&nbsp; Other works (for <span class="fl" style="min-width:10mm">&nbsp;0&nbsp;</span> hrs @ Rs. <span class="fl" style="min-width:14mm">&nbsp;</span> per hour)</td><td class="ac">Rs.&nbsp;<?= $isVisiting?'0.00':'' ?></td></tr>
-  <tr><td class="tb">Total bill claimed (a+b+c)</td><td class="ac tb">Rs.&nbsp;<?= $isVisiting?n($totalAmt):'' ?></td></tr>
+  <tr><td style="padding-left:8mm">a.&nbsp; Theory and Tutorials (for <span class="fl" style="min-width:10mm">&nbsp;<?= $isVisiting?$theoryHrs:'' ?>&nbsp;</span> hrs @ ₹ <span class="fl" style="min-width:12mm">&nbsp;<?= $isVisiting?n($rate):'' ?>&nbsp;</span> per hour)</td><td class="ac">₹&nbsp;<?= $isVisiting?n($theoryHrs*$rate):'' ?></td></tr>
+  <tr><td style="padding-left:8mm">b.&nbsp; Practical / Project (for <span class="fl" style="min-width:10mm">&nbsp;0&nbsp;</span> hrs @ ₹ <span class="fl" style="min-width:12mm">&nbsp;</span> per hour)</td><td class="ac">₹&nbsp;<?= $isVisiting?'0.00':'' ?></td></tr>
+  <tr><td style="padding-left:8mm">c.&nbsp; Other works (for <span class="fl" style="min-width:10mm">&nbsp;0&nbsp;</span> hrs @ ₹ <span class="fl" style="min-width:14mm">&nbsp;</span> per hour)</td><td class="ac">₹&nbsp;<?= $isVisiting?'0.00':'' ?></td></tr>
+  <tr><td class="tb">Total bill claimed: (<?= h($totalAmountWords) ?>)</td><td class="ac tb">₹&nbsp;<?= $isVisiting?n($totalAmt):'' ?></td></tr>
 </table>
 </div>
 
@@ -141,10 +158,10 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <?php if(!$isAdjunct) echo cross(); ?>
 <table>
   <tr><td colspan="2" class="sh">For Adjunct Faculty (Credit Based)</td></tr>
-  <tr><td class="lc">Permissible rate per credit (as per office order)</td><td class="ac">Rs.&nbsp;<?= $isAdjunct?n($rate):'' ?></td></tr>
-  <tr><td>Name of Program and course</td><td class="ac">1.<br>2.</td></tr>
-  <tr><td>Total no. of credits in the semester</td><td class="ac">1.&nbsp;<?= $isAdjunct?$totalLec:'' ?><br>2.</td></tr>
-  <tr><td class="tb">Bill claimed for <span class="fl" style="min-width:16mm">&nbsp;<?= $isAdjunct?$totalLec:'' ?>&nbsp;</span> credits in the semester @ Rs. <span class="fl" style="min-width:16mm">&nbsp;<?= $isAdjunct?n($rate):'' ?>&nbsp;</span> per credit</td><td class="ac tb">Rs.&nbsp;<?= $isAdjunct?n($totalAmt):'' ?></td></tr>
+  <tr><td class="lc">Permissible rate per credit (as per office order)</td><td>₹&nbsp;<?= $isAdjunct?n($rate):'' ?></td></tr>
+  <tr><td>Name of Program and course</td><td>1.<br>2.</td></tr>
+  <tr><td>Total no. of credits in the semester</td><td>1.&nbsp;<?= $isAdjunct?$totalLec:'' ?><br>2.</td></tr>
+  <tr><td class="tb">Bill claimed for <span class="fl" style="min-width:16mm">&nbsp;<?= $isAdjunct?$totalLec:'' ?>&nbsp;</span> credits in the semester @ ₹ <span class="fl" style="min-width:16mm">&nbsp;<?= $isAdjunct?n($rate):'' ?>&nbsp;</span> per credit</td><td class="tb">₹&nbsp;<?= $isAdjunct?n($totalAmt):'' ?></td></tr>
 </table>
 </div>
 </div>
@@ -154,10 +171,10 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <p class="cpara">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;I certify that the above bill claimed by me for said duration of academic load which is actually engaged by me and is in accordance with attendance register and record of department. The bill claimed herewith is correct according to the rates as prescribed in the order received from Govt. College of Engineering Aurangabad, Chhatrapati Sambhajinagar. I know that I will be responsible and accountable for any wrongful claim. I will return any excess amount disbursed, if found in future.</p>
 <div class="bbox">
   <h3>Bank Details of Claimant</h3>
-  <div>Name of Bank: <span class="fl" style="min-width:85mm">&nbsp;<?= h($bill['bank_name']??'') ?>&nbsp;</span></div>
-  <div>IFSC : <span class="fl" style="min-width:85mm">&nbsp;<?= h($bill['ifsc']??'') ?>&nbsp;</span></div>
-  <div class="brow"><div>A/C No. <span class="fl" style="min-width:55mm">&nbsp;<?= h($bill['account_no']??'') ?>&nbsp;</span></div><div>PAN: <span class="fl" style="min-width:38mm">&nbsp;<?= h($bill['pan']??'') ?>&nbsp;</span></div></div>
-  <div>Mobile No. <span class="fl" style="min-width:55mm">&nbsp;<?= h($bill['phone']??'') ?>&nbsp;</span></div>
+  <div>Name of Bank: <span class="fl" style="min-width: 140mm;margin-left: 15px;">&nbsp;<?= h($bill['bank_name']??'') ?>&nbsp;</span></div>
+  <div>IFSC : <span class="fl" style="min-width: 140mm;margin-left: 59px;">&nbsp;<?= h($bill['ifsc']??'') ?>&nbsp;</span></div>
+  <div class="brow"><div>A/C No. <span class="fl" style="min-width: 70mm;margin-left: 50px;">&nbsp;<?= h($bill['account_no']??'') ?>&nbsp;</span></div><div>PAN: <span class="fl" style="min-width:62mm">&nbsp;<?= h($bill['pan']??'') ?>&nbsp;</span></div></div>
+  <div>Mobile No. <span class="fl" style="min-width: 70mm;margin-left: 34px;">&nbsp;<?= h($bill['phone']??'') ?>&nbsp;</span></div>
 </div>
 <div class="sgg" style="margin-top:10mm">
   <div>Date: <span class="fl" style="min-width:35mm">&nbsp;<?= date('d / m / Y') ?>&nbsp;</span><br>Place: Chhatrapati Sambhaji Nagar</div>
